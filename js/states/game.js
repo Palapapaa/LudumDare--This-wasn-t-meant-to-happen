@@ -31,7 +31,15 @@ var gameState = {
          //Sons
         this.gameSounds = {};
         this.gameSounds.enemy_destroyed = game.add.audio("enemy_destroyed");
-
+        this.gameSounds.SEI = game.add.audio("SEI");
+        this.gameSounds.HOI = game.add.audio("HOI");
+        this.gameSounds.perfect = game.add.audio("perfect");
+        this.gameSounds.double_ko = game.add.audio("double_ko");
+        this.gameSounds.green_wins = game.add.audio("green_wins");
+        this.gameSounds.blue_wins = game.add.audio("blue_wins");
+        this.gameSounds.three_two_one_fight = game.add.audio("three_two_one_fight");
+        
+        this.gameSounds.three_two_one_fight.play();
 
 
         this.randomGenerator = new Phaser.RandomDataGenerator(1337);
