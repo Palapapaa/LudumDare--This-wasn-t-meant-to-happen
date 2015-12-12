@@ -73,6 +73,8 @@ var gameState = {
         this.playerA.hitTime = 0;
         this.playerA.velocity = {x:0,y:0};
         game.physics.enable(this.playerA, Phaser.Physics.ARCADE);
+        this.playerALifeBar = [];
+        this.addLifebar(true);
 
         this.playerB = game.add.sprite(game.global.gameWidth - 200, this.GROUNDLEVEL, 'player');
         this.playerB.life = this.MAXHP;
@@ -88,6 +90,8 @@ var gameState = {
         this.playerB.hitTime = 0;
         this.playerB.velocity = {x:0,y:0};
         game.physics.enable(this.playerB, Phaser.Physics.ARCADE);
+        this.playerBLifeBar = [];
+        this.addLifebar(false);
 
 
         //dot sur le feu
@@ -127,7 +131,6 @@ var gameState = {
 
 
         //Ajout du container de lifebar
-        this.addLifebar();
 
         //Gestion inputs
         key_D = game.input.keyboard.addKey(Phaser.Keyboard.D);
@@ -166,8 +169,24 @@ var gameState = {
 
     },
 
-    addLifebar: function(){
+    addLifebar: function(firstplayer){
+      if (firstplayer) {
+        var player = this.playerA;
+        lifebar = this.playerALifeBar;
+        var x = 20;
+      } else {
+        var player = this.playerB;
+        lifebar = this.playerBLifeBar;
+        var x = 500;
+      }
 
+      var y = 20;
+      for (var i = 0, l = player.life; i < l; i++) {
+        var lifeBarBlock     = game.add.sprite(x ,y, "lifebar");
+        lifeBarBlock.scale.setTo(1 / player.life, 1);
+        lifebar.push(lifeBarBlock);
+        x += 46;
+      }
 
     },
 
@@ -254,5 +273,44 @@ var gameState = {
             
             this.gameSounds.HOI.play();
         }
+
+    },
+
+    hoi: function(player) {
+      this.gameSounds.HOI.play();
+    },
+
+    takeDamage: function(firstplayer) {
+      if (firstplayer) {
+        var player = this.playerA;
+        lifebar = this.playerALifeBar;
+      } else {
+        var player = this.playerB;
+        lifebar = this.playerBLifeBar;
+      }
+
+      player.life--;
+
+      var lastElem = lifebar[lifebar.length - 1];
+
+      //Suppression d'un morceau de la barre de vie
+
+      var bounce=game.add.tween(lastElem);
+
+      bounce.to({ x: -500, y : -100, angle: -360}, 500, Phaser.Easing.Linear.In);
+      bounce.onComplete.add(function() {
+        lastElem.kill();
+        //suppression dans le tableau
+
+        //Si le joueur en question est deceday
+        if (player.life <= 0) {
+          player.kill();
+        }
+      }, this);
+
+      lifebar.pop();
+
+      bounce.start();
+
     }
 };
