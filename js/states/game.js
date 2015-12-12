@@ -12,7 +12,17 @@ var gameState = {
         this.DOWN = 1;
         this.LEFT = -1;
         this.RIGHT = 1;
-        this.GROUNDLEVEL=360;
+        this.GROUNDLEVEL=400;
+        
+        this.STATE_GROUND = 0;
+        this.STATE_AIR = 1;
+        this.STATE_SEI = 2;
+        this.STATE_HOI = 3;
+        this.STATE_DEAD = 5;
+        
+        this.ATTACK_COOLDOWN = 700;
+        this.ATTACK_TIME = 500;
+        this.HIT_TIME = 500;
 
         this.MAXHP = 5;
 
@@ -49,21 +59,34 @@ var gameState = {
 
 
         //Ajout des players
-        this.playerA = game.add.sprite(100, this.GROUNDLEVEL, 'player');
+        this.playerA = game.add.sprite(200, this.GROUNDLEVEL, 'player');
         this.playerA.life = this.MAXHP;
         this.playerA.enableBody = true;
         this.playerA.animations.add('idle', [0,1], 3, true);
         this.playerA.animations.play('idle');
         this.playerA.tint="0x009900";
+        this.playerA.direction = this.RIGHT;
+        this.playerA.anchor.setTo(0.5, 0.5);
+        this.playerA.state = this.STATE_GROUND;
+        this.playerA.attackCooldown = 0;
+        this.playerA.attackTime = 0;
+        this.playerA.hitTime = 0;
+        this.playerA.velocity = {x:0,y:0};
         game.physics.enable(this.playerA, Phaser.Physics.ARCADE);
 
-        this.playerB = game.add.sprite(game.global.gameWidth - 100, this.GROUNDLEVEL, 'player');
+        this.playerB = game.add.sprite(game.global.gameWidth - 200, this.GROUNDLEVEL, 'player');
         this.playerB.life = this.MAXHP;
         this.playerB.enableBody = true;
         this.playerB.animations.add('idle', [0,1], 3, true);
         this.playerB.animations.play('idle');
         this.playerB.tint="0x000099";
-        this.playerB.scale.setTo(-1,1);
+        this.playerB.direction = this.LEFT;
+        this.playerB.anchor.setTo(0.5, 0.5);
+        this.playerB.state = this.STATE_GROUND;
+        this.playerB.attackCooldown = 0;
+        this.playerB.attackTime = 0;
+        this.playerB.hitTime = 0;
+        this.playerB.velocity = {x:0,y:0};
         game.physics.enable(this.playerB, Phaser.Physics.ARCADE);
 
 
@@ -107,23 +130,23 @@ var gameState = {
         this.addLifebar();
 
         //Gestion inputs
-        key1 = game.input.keyboard.addKey(Phaser.Keyboard.D);
-        key1.onDown.add(function() {
+        key_D = game.input.keyboard.addKey(Phaser.Keyboard.D);
+        key_D.onDown.add(function() {
           this.sei(this.playerA);
         }, this);
 
-        key2 = game.input.keyboard.addKey(Phaser.Keyboard.F);
-        key2.onDown.add(function() {
+        key_F = game.input.keyboard.addKey(Phaser.Keyboard.F);
+        key_F.onDown.add(function() {
           this.hoi(this.playerA);
         }, this);
 
-        key3 = game.input.keyboard.addKey(Phaser.Keyboard.K);
-        key3.onDown.add(function() {
+        key_K = game.input.keyboard.addKey(Phaser.Keyboard.K);
+        key_K.onDown.add(function() {
           this.sei(this.playerB);
         }, this);
 
-        key4 = game.input.keyboard.addKey(Phaser.Keyboard.L);
-        key4.onDown.add(function() {
+        key_L = game.input.keyboard.addKey(Phaser.Keyboard.L);
+        key_L.onDown.add(function() {
           this.hoi(this.playerB);
         }, this);
 
@@ -134,8 +157,10 @@ var gameState = {
     },
 
     update : function(){
-
-
+        
+        this.updatePlayer(this.playerA);
+        this.updatePlayer(this.playerB);
+        //console.log(game.time.elapsed);
 
 
 
@@ -146,6 +171,61 @@ var gameState = {
 
     },
 
+    updatePlayer : function(player){
+        player.scale.setTo(player.direction,1);
+        
+        if(player.state == this.STATE_GROUND){
+            player.velocity.x = 0;
+            player.velocity.y = 0;
+        }
+        
+        player.x += player.velocity.x * game.time.elapsed / 1000;
+        player.y += player.velocity.y * game.time.elapsed / 1000;
+        
+        if(player.x > game.global.gameWidth){
+            player.x = game.global.gameWidth;
+            player.direction = this.LEFT;
+            player.velocity.x = -player.velocity.x;
+        }else if(player.x < 0){
+            player.x = 0;
+            player.direction = this.RIGHT;
+            player.velocity.x = -player.velocity.x;
+        }
+        
+        if(player.state != this.STATE_GROUND && player.state != this.STATE_HOI){
+            player.velocity.y += 1000 * game.time.elapsed / 1000; 
+        }
+        
+        
+        if(player.state == this.STATE_AIR && player.y > this.GROUNDLEVEL){
+            player.y = this.GROUNDLEVEL;
+            player.state = this.STATE_GROUND;
+        }
+        
+        
+        if(player.state == this.STATE_SEI){
+            player.angle += player.direction * 1400 * game.time.elapsed / 1000;
+        }
+        if(player.hitTime > 0 ){
+            player.hitTime = Math.max(0, player.hitTime - game.time.elapsed);
+        }
+        if(player.attackTime > 0 ){
+            player.attackTime = Math.max(0, player.attackTime - game.time.elapsed);
+            if(player.attackTime == 0){
+                player.angle = 0;
+                if(player.y > this.GROUNDLEVEL){
+                    player.state = this.STATE_GROUND;
+                    player.y = this.GROUNDLEVEL;
+                }else{
+                    player.state = this.STATE_AIR;
+                } 
+            }
+        }
+        if(player.attackCooldown > 0 ){
+            player.attackCooldown = Math.max(0, player.attackCooldown - game.time.elapsed);
+        }
+        
+    },
 
 
     fireDot : function(){
@@ -153,10 +233,26 @@ var gameState = {
     },
 
     sei: function(player) {
-      this.gameSounds.SEI.play();
+        if((player.state == this.STATE_GROUND || player.state == this.STATE_AIR) && (player.attackCooldown == 0 && player.hitTime == 0)){
+            
+            player.state = this.STATE_SEI;
+            player.attackTime = this.ATTACK_TIME;
+            player.attackCooldown = this.ATTACK_COOLDOWN;
+            player.velocity.x = 500 * player.direction;
+            player.velocity.y = -550;
+            
+            this.gameSounds.SEI.play();
+        }
     },
 
     hoi: function(player) {
-      this.gameSounds.HOI.play();
+        if((player.state == this.STATE_GROUND || player.state == this.STATE_AIR) && (player.attackCooldown == 0 && player.hitTime == 0)){
+            
+            player.state = this.STATE_HOI;
+            player.attackTime = this.ATTACK_TIME;
+            player.attackCooldown = this.ATTACK_COOLDOWN;
+            
+            this.gameSounds.HOI.play();
+        }
     }
 };
