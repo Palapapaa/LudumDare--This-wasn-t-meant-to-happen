@@ -21,8 +21,6 @@ var loadState = {
         game.load.spritesheet('player' , 'assets/graphics/player.png', 40, 80, 2);
 
         game.load.image('card_template' , 'assets/graphics/card_template.png');
-        // Chargement des sons
-        game.load.audio('enemy_destroyed',['assets/audio/enemy_destroyed.wav',]);
         
         
         game.load.image('background_game' , 'assets/graphics/background_game.png');
@@ -32,7 +30,18 @@ var loadState = {
         
         //musique
         game.load.audio('MonstA',['assets/audio/MonstA.ogg',]);
-
+        
+        //sons
+        game.load.audio('SEI',['assets/audio/sei.ogg',]);
+        game.load.audio('HOI',['assets/audio/hoi.ogg',]);
+        game.load.audio('perfect',['assets/audio/perfect.ogg',]);
+        game.load.audio('green_wins',['assets/audio/green_wins.ogg',]);
+        game.load.audio('blue_wins',['assets/audio/blue_wins.ogg',]);
+        game.load.audio('double_ko',['assets/audio/double_ko.ogg',]);
+        game.load.audio('three_two_one_fight',['assets/audio/three_two_one_fight.ogg',]);
+        
+        // Chargement des sons
+        game.load.audio('enemy_destroyed',['assets/audio/enemy_destroyed.wav',]);
 
 
 
