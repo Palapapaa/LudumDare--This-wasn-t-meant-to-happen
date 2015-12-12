@@ -40,7 +40,7 @@ var gameState = {
         this.gameSounds.three_two_one_fight = game.add.audio("three_two_one_fight");
         
         this.gameSounds.three_two_one_fight.play();
-
+        game.global.bgm.play("",0,0.3,true);
 
         this.randomGenerator = new Phaser.RandomDataGenerator(1337);
 

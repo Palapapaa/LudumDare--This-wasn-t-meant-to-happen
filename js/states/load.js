@@ -29,7 +29,7 @@ var loadState = {
         game.load.image('particle_damage' , 'assets/graphics/particle_damage.png');
         
         //musique
-        game.load.audio('MonstA',['assets/audio/MonstA.ogg',]);
+        game.load.audio('theme',['assets/audio/theme.ogg',]);
         
         //sons
         game.load.audio('SEI',['assets/audio/sei.ogg',]);
@@ -48,8 +48,8 @@ var loadState = {
 
     },
     create : function(){
-        game.global.bgm = game.add.audio("MonstA");
-        game.global.bgm.play("",0,0.3,true);
+        game.global.bgm = game.add.audio("theme");
+        
         // On démarre l'état du menu
         game.state.start('menu');
     },
