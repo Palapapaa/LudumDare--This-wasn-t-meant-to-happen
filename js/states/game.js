@@ -191,23 +191,24 @@ var gameState = {
 
     updatePlayer : function(player,other){
         //face other player if not attacking
-        if(player.state == this.STATE_AIR || player.state == this.STATE_GROUND){
-            if(player.x > other.x && player.direction == this.RIGHT){
+        if(player.state === this.STATE_AIR || player.state === this.STATE_GROUND){
+            if(player.x > other.x && player.direction === this.RIGHT){
                 player.direction = this.LEFT;
-            }else if(player.x < other.x && player.direction == this.LEFT){
+            }else if(player.x < other.x && player.direction === this.LEFT){
                 player.direction = this.RIGHT;
             }
         }
         player.scale.setTo(player.direction,1);
 
         //stops player if it is on the ground
-        if(player.state == this.STATE_GROUND){
+        if(player.state === this.STATE_GROUND){
             player.velocity.x = 0;
             player.velocity.y = 0;
         }
 
-        player.x += player.velocity.x * game.time.elapsed / 1000;
-        player.y += player.velocity.y * game.time.elapsed / 1000;
+        var timeElapsedSec = game.time.elapsed / 1000
+        player.x += player.velocity.x * timeElapsedSec;
+        player.y += player.velocity.y * timeElapsedSec;
 
         //check arena bounds
         if(player.x > game.global.gameWidth){
@@ -221,29 +222,29 @@ var gameState = {
         }
 
         //gravity
-        if(player.state != this.STATE_GROUND){
-            player.velocity.y += 1000 * game.time.elapsed / 1000;
+        if(player.state !== this.STATE_GROUND){
+            player.velocity.y += 1000 * timeElapsedSec;
         }
 
 
-        if((player.state == this.STATE_AIR || player.state == this.STATE_HOI)  && player.y > this.GROUNDLEVEL){
+        if((player.state === this.STATE_AIR || player.state === this.STATE_HOI)  && player.y > this.GROUNDLEVEL){
             player.y = this.GROUNDLEVEL;
-            if(player.state == this.STATE_HOI){
+            if(player.state === this.STATE_HOI){
                 player.angle = 0;
                 player.attackTime = 0;
             }
             player.state = this.STATE_GROUND;
         }
 
-        if(player.state == this.STATE_SEI){
-            player.angle += player.direction * 1400 * game.time.elapsed / 1000;
+        if(player.state === this.STATE_SEI){
+            player.angle += player.direction * 1400 * timeElapsedSec;
         }
         if(player.hitTime > 0 ){
             player.hitTime = Math.max(0, player.hitTime - game.time.elapsed);
         }
         if(player.attackTime > 0 ){
             player.attackTime = Math.max(0, player.attackTime - game.time.elapsed);
-            if(player.attackTime == 0){
+            if(player.attackTime === 0){
                 player.angle = 0;
                 if(player.y > this.GROUNDLEVEL){
                     player.state = this.STATE_GROUND;
@@ -265,7 +266,7 @@ var gameState = {
     },
 
     sei: function(player) {
-        if((player.state == this.STATE_GROUND || player.state == this.STATE_AIR) && (player.attackCooldown == 0 && player.hitTime == 0)){
+        if((player.state === this.STATE_GROUND || player.state === this.STATE_AIR) && (player.attackCooldown === 0 && player.hitTime === 0)){
 
             player.state = this.STATE_SEI;
             player.attackTime = this.ATTACK_TIME;
@@ -278,10 +279,10 @@ var gameState = {
     },
 
     hoi: function(player) {
-        if((player.state == this.STATE_GROUND || player.state == this.STATE_AIR) && (player.attackCooldown == 0 && player.hitTime == 0)){
+        if((player.state === this.STATE_GROUND || player.state === this.STATE_AIR) && (player.attackCooldown === 0 && player.hitTime === 0)){
             player.attackTime = this.ATTACK_TIME;
             player.attackCooldown = this.ATTACK_COOLDOWN;
-            if(player.state == this.STATE_GROUND){
+            if(player.state === this.STATE_GROUND){
 
                 player.velocity.x = 300 * -player.direction;
                 player.velocity.y = -700;
@@ -316,7 +317,6 @@ var gameState = {
       bounce.to({ x: -500, y : -100, angle: -360}, 500, Phaser.Easing.Linear.In);
       bounce.onComplete.add(function() {
         lastElem.kill();
-        //suppression dans le tableau
 
         //Si le joueur en question est deceday
         if (player.life <= 0) {
@@ -324,6 +324,7 @@ var gameState = {
         }
       }, this);
 
+      //suppression dans le tableau
       lifebar.pop();
 
       bounce.start();
@@ -334,7 +335,6 @@ var gameState = {
       if ((this.playerA.state === this.STATE_SEI || this.playerA.state === this.STATE_HOI) && this.playerA.hitTime === 0) {
         this.playerA.hitTime = this.HIT_TIME;
         this.takeDamage(false);
-        // /console.log(this.playerA)
         this.playerA.velocity.x = -this.playerA.velocity.x;
 
       }
@@ -343,8 +343,6 @@ var gameState = {
         this.playerB.hitTime = this.HIT_TIME;
         this.takeDamage(true);
         this.playerB.velocity.x = -this.playerB.velocity.x;
-
       }
-
     }
 };
