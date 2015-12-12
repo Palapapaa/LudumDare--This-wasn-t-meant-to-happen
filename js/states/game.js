@@ -13,13 +13,13 @@ var gameState = {
         this.LEFT = -1;
         this.RIGHT = 1;
         this.GROUNDLEVEL=400;
-        
+
         this.STATE_GROUND = 0;
         this.STATE_AIR = 1;
         this.STATE_SEI = 2;
         this.STATE_HOI = 3;
         this.STATE_DEAD = 5;
-        
+
         this.ATTACK_COOLDOWN = 700;
         this.ATTACK_TIME = 500;
         this.HIT_TIME = 500;
@@ -153,19 +153,18 @@ var gameState = {
           this.hoi(this.playerB);
         }, this);
 
-
-
-
+        //Collision
+        game.physics.arcade.collide(this.playerA,this.playerB);
 
     },
 
     update : function(){
-        
+
         this.updatePlayer(this.playerA);
         this.updatePlayer(this.playerB);
         //console.log(game.time.elapsed);
 
-
+        game.physics.arcade.overlap(this.playerA, this.playerB, this.playerCollision, null, this);
 
     },
 
@@ -192,15 +191,15 @@ var gameState = {
 
     updatePlayer : function(player){
         player.scale.setTo(player.direction,1);
-        
+
         if(player.state == this.STATE_GROUND){
             player.velocity.x = 0;
             player.velocity.y = 0;
         }
-        
+
         player.x += player.velocity.x * game.time.elapsed / 1000;
         player.y += player.velocity.y * game.time.elapsed / 1000;
-        
+
         if(player.x > game.global.gameWidth){
             player.x = game.global.gameWidth;
             player.direction = this.LEFT;
@@ -210,18 +209,18 @@ var gameState = {
             player.direction = this.RIGHT;
             player.velocity.x = -player.velocity.x;
         }
-        
+
         if(player.state != this.STATE_GROUND && player.state != this.STATE_HOI){
-            player.velocity.y += 1000 * game.time.elapsed / 1000; 
+            player.velocity.y += 1000 * game.time.elapsed / 1000;
         }
-        
-        
+
+
         if(player.state == this.STATE_AIR && player.y > this.GROUNDLEVEL){
             player.y = this.GROUNDLEVEL;
             player.state = this.STATE_GROUND;
         }
-        
-        
+
+
         if(player.state == this.STATE_SEI){
             player.angle += player.direction * 1400 * game.time.elapsed / 1000;
         }
@@ -237,13 +236,13 @@ var gameState = {
                     player.y = this.GROUNDLEVEL;
                 }else{
                     player.state = this.STATE_AIR;
-                } 
+                }
             }
         }
         if(player.attackCooldown > 0 ){
             player.attackCooldown = Math.max(0, player.attackCooldown - game.time.elapsed);
         }
-        
+
     },
 
 
@@ -253,24 +252,24 @@ var gameState = {
 
     sei: function(player) {
         if((player.state == this.STATE_GROUND || player.state == this.STATE_AIR) && (player.attackCooldown == 0 && player.hitTime == 0)){
-            
+
             player.state = this.STATE_SEI;
             player.attackTime = this.ATTACK_TIME;
             player.attackCooldown = this.ATTACK_COOLDOWN;
             player.velocity.x = 500 * player.direction;
             player.velocity.y = -550;
-            
+
             this.gameSounds.SEI.play();
         }
     },
 
     hoi: function(player) {
         if((player.state == this.STATE_GROUND || player.state == this.STATE_AIR) && (player.attackCooldown == 0 && player.hitTime == 0)){
-            
+
             player.state = this.STATE_HOI;
             player.attackTime = this.ATTACK_TIME;
             player.attackCooldown = this.ATTACK_COOLDOWN;
-            
+
             this.gameSounds.HOI.play();
         }
 
@@ -292,7 +291,6 @@ var gameState = {
       player.life--;
 
       var lastElem = lifebar[lifebar.length - 1];
-
       //Suppression d'un morceau de la barre de vie
 
       var bounce=game.add.tween(lastElem);
@@ -311,6 +309,24 @@ var gameState = {
       lifebar.pop();
 
       bounce.start();
+
+    },
+
+    playerCollision: function(){
+      if ((this.playerA.state === this.STATE_SEI || this.playerA.state === this.STATE_HOI) && this.playerA.hitTime === 0) {
+        this.playerA.hitTime = this.HIT_TIME;
+        this.takeDamage(false);
+        // /console.log(this.playerA)
+        this.playerA.velocity.x = -this.playerA.velocity.x;
+
+      }
+
+      if ((this.playerB.state === this.STATE_SEI || this.playerB.state === this.STATE_HOI) && this.playerB.hitTime === 0) {
+        this.playerB.hitTime = this.HIT_TIME;
+        this.takeDamage(true);
+        this.playerB.velocity.x = -this.playerB.velocity.x;
+
+      }
 
     }
 };
