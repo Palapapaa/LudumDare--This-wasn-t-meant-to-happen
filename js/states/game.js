@@ -173,6 +173,7 @@ var gameState = {
 
     sei: function(player) {
       this.gameSounds.SEI.play();
+      this.takeDamage(true);
     },
 
     hoi: function(player) {
@@ -190,14 +191,28 @@ var gameState = {
 
       player.life--;
 
+      var lastElem = lifebar[lifebar.length - 1];
+
       //Suppression d'un morceau de la barre de vie
-      lifebar[lifebar.length - 1].kill();
-      //suppression dans le tableau
+
+
+
+      var bounce=game.add.tween(lastElem);
+
+      bounce.to({ x: -500, y : -100, angle: -360}, 500, Phaser.Easing.Linear.In);
+      bounce.onComplete.add(function() {
+        lastElem.kill();
+        //suppression dans le tableau
+
+        //Si le joueur en question est deceday
+        if (player.life <= 0) {
+          player.kill();
+        }
+      }, this);
+
       lifebar.pop();
 
-      //Si le joueur en question est deceday
-      if (player.life <= 0) {
-        player.kill();
-      }
+      bounce.start();
+
     }
 };
