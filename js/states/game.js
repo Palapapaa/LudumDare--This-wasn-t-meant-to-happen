@@ -56,6 +56,8 @@ var gameState = {
         this.playerA.animations.play('idle');
         this.playerA.tint="0x009900";
         game.physics.enable(this.playerA, Phaser.Physics.ARCADE);
+        this.playerALifeBar = [];
+        this.addLifebar(true);
 
         this.playerB = game.add.sprite(game.global.gameWidth - 100, this.GROUNDLEVEL, 'player');
         this.playerB.life = this.MAXHP;
@@ -65,6 +67,8 @@ var gameState = {
         this.playerB.tint="0x000099";
         this.playerB.scale.setTo(-1,1);
         game.physics.enable(this.playerB, Phaser.Physics.ARCADE);
+        this.playerBLifeBar = [];
+        this.addLifebar(false);
 
 
         //dot sur le feu
@@ -104,7 +108,6 @@ var gameState = {
 
 
         //Ajout du container de lifebar
-        this.addLifebar();
 
         //Gestion inputs
         key1 = game.input.keyboard.addKey(Phaser.Keyboard.D);
@@ -141,8 +144,24 @@ var gameState = {
 
     },
 
-    addLifebar: function(){
+    addLifebar: function(firstplayer){
+      if (firstplayer) {
+        var player = this.playerA;
+        lifebar = this.playerALifeBar;
+        var x = 20;
+      } else {
+        var player = this.playerB;
+        lifebar = this.playerBLifeBar;
+        var x = 500;
+      }
 
+      var y = 20;
+      for (var i = 0, l = player.life; i < l; i++) {
+        var lifeBarBlock     = game.add.sprite(x ,y, "lifebar");
+        lifeBarBlock.scale.setTo(1 / player.life, 1);
+        lifebar.push(lifeBarBlock);
+        x += 46;
+      }
 
     },
 
@@ -158,5 +177,27 @@ var gameState = {
 
     hoi: function(player) {
       this.gameSounds.HOI.play();
+    },
+
+    takeDamage: function(firstplayer) {
+      if (firstplayer) {
+        var player = this.playerA;
+        lifebar = this.playerALifeBar;
+      } else {
+        var player = this.playerB;
+        lifebar = this.playerBLifeBar;
+      }
+
+      player.life--;
+
+      //Suppression d'un morceau de la barre de vie
+      lifebar[lifebar.length - 1].kill();
+      //suppression dans le tableau
+      lifebar.pop();
+
+      //Si le joueur en question est deceday
+      if (player.life <= 0) {
+        player.kill();
+      }
     }
 };
