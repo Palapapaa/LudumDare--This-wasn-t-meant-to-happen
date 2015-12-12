@@ -160,8 +160,8 @@ var gameState = {
 
     update : function(){
 
-        this.updatePlayer(this.playerA);
-        this.updatePlayer(this.playerB);
+        this.updatePlayer(this.playerA,this.playerB);
+        this.updatePlayer(this.playerB,this.playerA);
         //console.log(game.time.elapsed);
 
         game.physics.arcade.overlap(this.playerA, this.playerB, this.playerCollision, null, this);
@@ -189,9 +189,18 @@ var gameState = {
 
     },
 
-    updatePlayer : function(player){
+    updatePlayer : function(player,other){
+        //face other player if not attacking
+        if(player.state == this.STATE_AIR || player.state == this.STATE_GROUND){
+            if(player.x > other.x && player.direction == this.RIGHT){
+                player.direction = this.LEFT;
+            }else if(player.x < other.x && player.direction == this.LEFT){
+                player.direction = this.RIGHT;
+            }
+        }
         player.scale.setTo(player.direction,1);
 
+        //stops player if it is on the ground
         if(player.state == this.STATE_GROUND){
             player.velocity.x = 0;
             player.velocity.y = 0;
@@ -200,6 +209,7 @@ var gameState = {
         player.x += player.velocity.x * game.time.elapsed / 1000;
         player.y += player.velocity.y * game.time.elapsed / 1000;
 
+        //check arena bounds
         if(player.x > game.global.gameWidth){
             player.x = game.global.gameWidth;
             player.direction = this.LEFT;
@@ -210,16 +220,20 @@ var gameState = {
             player.velocity.x = -player.velocity.x;
         }
 
-        if(player.state != this.STATE_GROUND && player.state != this.STATE_HOI){
+        //gravity
+        if(player.state != this.STATE_GROUND){
             player.velocity.y += 1000 * game.time.elapsed / 1000;
         }
 
 
-        if(player.state == this.STATE_AIR && player.y > this.GROUNDLEVEL){
+        if((player.state == this.STATE_AIR || player.state == this.STATE_HOI)  && player.y > this.GROUNDLEVEL){
             player.y = this.GROUNDLEVEL;
+            if(player.state == this.STATE_HOI){
+                player.angle = 0;
+                player.attackTime = 0;
+            }
             player.state = this.STATE_GROUND;
         }
-
 
         if(player.state == this.STATE_SEI){
             player.angle += player.direction * 1400 * game.time.elapsed / 1000;
@@ -265,19 +279,23 @@ var gameState = {
 
     hoi: function(player) {
         if((player.state == this.STATE_GROUND || player.state == this.STATE_AIR) && (player.attackCooldown == 0 && player.hitTime == 0)){
-
-            player.state = this.STATE_HOI;
             player.attackTime = this.ATTACK_TIME;
             player.attackCooldown = this.ATTACK_COOLDOWN;
+            if(player.state == this.STATE_GROUND){
 
+                player.velocity.x = 300 * -player.direction;
+                player.velocity.y = -700;
+            }else{
+                player.velocity.x = 600 * player.direction;
+                player.velocity.y = 800;
+            }
+            player.angle = player.direction * -35;
+            player.state = this.STATE_HOI;
             this.gameSounds.HOI.play();
         }
 
     },
 
-    hoi: function(player) {
-      this.gameSounds.HOI.play();
-    },
 
     takeDamage: function(firstplayer) {
       if (firstplayer) {
