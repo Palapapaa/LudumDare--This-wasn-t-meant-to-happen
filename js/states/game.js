@@ -49,8 +49,7 @@ var gameState = {
         this.gameSounds.blue_wins = game.add.audio("blue_wins");
         this.gameSounds.three_two_one_fight = game.add.audio("three_two_one_fight");
 
-        this.gameSounds.three_two_one_fight.play();
-        game.global.bgm.play("",0,0.3,true);
+        
 
         this.randomGenerator = new Phaser.RandomDataGenerator(1337);
 
@@ -58,53 +57,12 @@ var gameState = {
         //console.log("game state create() finished");
 
 
-        //Ajout des players
-        this.playerA = game.add.sprite(200, this.GROUNDLEVEL, 'player');
-        this.playerA.life = this.MAXHP;
-        this.playerA.enableBody = true;
-        this.playerA.animations.add('idle', [0,1], 3, true);
-        this.playerA.animations.play('idle');
-        this.playerA.tint="0x009900";
-        this.playerA.direction = this.RIGHT;
-        this.playerA.anchor.setTo(0.5, 0.5);
-        this.playerA.state = this.STATE_GROUND;
-        this.playerA.attackCooldown = 0;
-        this.playerA.attackTime = 0;
-        this.playerA.hitTime = 0;
-        this.playerA.velocity = {x:0,y:0};
-        game.physics.enable(this.playerA, Phaser.Physics.ARCADE);
-        this.playerALifeBar = [];
-        this.addLifebar(true);
-
-        this.playerB = game.add.sprite(game.global.gameWidth - 200, this.GROUNDLEVEL, 'player');
-        this.playerB.life = this.MAXHP;
-        this.playerB.enableBody = true;
-        this.playerB.animations.add('idle', [0,1], 3, true);
-        this.playerB.animations.play('idle');
-        this.playerB.tint="0x000099";
-        this.playerB.direction = this.LEFT;
-        this.playerB.anchor.setTo(0.5, 0.5);
-        this.playerB.state = this.STATE_GROUND;
-        this.playerB.attackCooldown = 0;
-        this.playerB.attackTime = 0;
-        this.playerB.hitTime = 0;
-        this.playerB.velocity = {x:0,y:0};
-        game.physics.enable(this.playerB, Phaser.Physics.ARCADE);
-        this.playerBLifeBar = [];
-        this.addLifebar(false);
+        this.initRound();
 
 
         //dot sur le feu
         this.loopFireDot = game.time.events.loop(1000, this.fireDot, this);
 
-        //Particules explosions
-        this.emitterExplosion = game.add.emitter(0, 0 , 180);
-        this.emitterExplosion.setXSpeed(-150, 150);
-        this.emitterExplosion.setYSpeed(-150, 150);
-        this.emitterExplosion.minParticleScale = 0.8;
-        this.emitterExplosion.maxParticleScale = 1.6;
-        this.emitterExplosion.gravity = 5;
-        this.emitterExplosion.makeParticles('particle_fire');
 
         //Particules damage
         this.emitterDamage = game.add.emitter(0, 0 , 180);
@@ -115,18 +73,8 @@ var gameState = {
         this.emitterDamage.gravity = 0;
         this.emitterDamage.makeParticles('particle_damage');
 
-        //Particules feu
-        this.emitterFire = game.add.emitter(0, 0 , 30);
-        this.emitterFire.setXSpeed(0, 0);
-        this.emitterFire.setYSpeed(-15, -10);
-        this.emitterFire.minParticleScale = 1.8;
-        this.emitterFire.maxParticleScale = 1.6;
-        this.emitterFire.gravity = 5;
-        this.emitterFire.makeParticles('particle_fire');
 
-        //shadows for the scene
-        this.shadowmap = game.add.sprite(-20,-20,"shadowmap_game");
-        this.shadowmap.blendMode = PIXI.blendModes.MULTIPLY;
+        
 
 
 
@@ -167,6 +115,76 @@ var gameState = {
         game.physics.arcade.overlap(this.playerA, this.playerB, this.playerCollision, null, this);
 
     },
+    
+    initRound : function(){
+
+        //destruction des players
+        if(this.playerA){
+            this.shadowmap.kill();
+            for(var i = 0, l = this.playerALifeBar.length;i<l;i++){
+                   this.playerALifeBar[i].kill();
+            }
+            this.playerA.kill();
+            for(var i = 0, l = this.playerBLifeBar.length;i<l;i++){
+                   this.playerBLifeBar[i].kill();
+            }
+            this.playerB.kill();
+        }
+        
+        
+        
+        
+       //Ajout des players
+        this.playerA = game.add.sprite(200, this.GROUNDLEVEL, 'player');
+        this.playerA.life = this.MAXHP;
+        this.playerA.enableBody = true;
+        this.playerA.animations.add('idle', [0,1], 3, true);
+        this.playerA.animations.play('idle');
+        this.playerA.tint="0x009900";
+        this.playerA.direction = this.RIGHT;
+        this.playerA.anchor.setTo(0.5, 0.5);
+        this.playerA.state = this.STATE_GROUND;
+        this.playerA.attackCooldown = 0;
+        this.playerA.attackTime = 0;
+        this.playerA.hitTime = 0;
+        this.playerA.velocity = {x:0,y:0};
+        game.physics.enable(this.playerA, Phaser.Physics.ARCADE);
+        this.playerALifeBar = [];
+        this.addLifebar(true);
+
+        this.playerB = game.add.sprite(game.global.gameWidth - 200, this.GROUNDLEVEL, 'player');
+        this.playerB.life = this.MAXHP;
+        this.playerB.enableBody = true;
+        this.playerB.animations.add('idle', [0,1], 3, true);
+        this.playerB.animations.play('idle');
+        this.playerB.tint="0x000099";
+        this.playerB.direction = this.LEFT;
+        this.playerB.anchor.setTo(0.5, 0.5);
+        this.playerB.state = this.STATE_GROUND;
+        this.playerB.attackCooldown = 0;
+        this.playerB.attackTime = 0;
+        this.playerB.hitTime = 0;
+        this.playerB.velocity = {x:0,y:0};
+        game.physics.enable(this.playerB, Phaser.Physics.ARCADE);
+        this.playerBLifeBar = [];
+        this.addLifebar(false);
+        
+        //shadows for the scene
+        this.shadowmap = game.add.sprite(-20,-20,"shadowmap_game");
+        this.shadowmap.blendMode = PIXI.blendModes.MULTIPLY;
+        
+        this.gameSounds.three_two_one_fight.play();
+        game.global.bgm.play("",0,0.3,true);
+        this.started = false;
+        game.time.events.add(3000, this.startRound, this);
+
+    },
+    
+    startRound : function(){
+        this.started = true;   
+    },
+    
+    
 
     addLifebar: function(firstplayer){
       if (firstplayer) {
@@ -239,6 +257,10 @@ var gameState = {
         if(player.state === this.STATE_SEI){
             player.angle += player.direction * 1400 * timeElapsedSec;
         }
+        if(player.state === this.STATE_DEAD){
+            player.angle += -player.direction * 400 * timeElapsedSec;
+        }
+        
         if(player.hitTime > 0 ){
             player.hitTime = Math.max(0, player.hitTime - game.time.elapsed);
         }
@@ -266,7 +288,8 @@ var gameState = {
     },
 
     sei: function(player) {
-        if((player.state === this.STATE_GROUND || player.state === this.STATE_AIR) && (player.attackCooldown === 0 && player.hitTime === 0)){
+        
+        if((player.state === this.STATE_GROUND || player.state === this.STATE_AIR) && (player.attackCooldown === 0 && player.hitTime === 0) && this.started){
 
             player.state = this.STATE_SEI;
             player.attackTime = this.ATTACK_TIME;
@@ -279,7 +302,7 @@ var gameState = {
     },
 
     hoi: function(player) {
-        if((player.state === this.STATE_GROUND || player.state === this.STATE_AIR) && (player.attackCooldown === 0 && player.hitTime === 0)){
+        if((player.state === this.STATE_GROUND || player.state === this.STATE_AIR) && (player.attackCooldown === 0 && player.hitTime === 0) && this.started){
             player.attackTime = this.ATTACK_TIME;
             player.attackCooldown = this.ATTACK_COOLDOWN;
             if(player.state === this.STATE_GROUND){
@@ -298,15 +321,19 @@ var gameState = {
     },
 
 
-    takeDamage: function(firstplayer) {
-      if (firstplayer) {
-        var player = this.playerA;
-        lifebar = this.playerALifeBar;
-      } else {
-        var player = this.playerB;
-        lifebar = this.playerBLifeBar;
-      }
+    takeDamage: function(firstplayer) {        
+    
+          if (firstplayer) {
+            var player = this.playerA;
+            lifebar = this.playerALifeBar;
+          } else {
+            var player = this.playerB;
+            lifebar = this.playerBLifeBar;
+          }
 
+        this.emitterDamage.x=player.x+player.width/2;
+        this.emitterDamage.y=player.y+player.height/2;
+        this.emitterDamage.start(true, 400, null, 30);
       player.life--;
 
       var lastElem = lifebar[lifebar.length - 1];
@@ -320,7 +347,9 @@ var gameState = {
 
         //Si le joueur en question est deceday
         if (player.life <= 0) {
-          player.kill();
+            player.state = this.STATE_DEAD;
+            game.time.events.add(500, this.annouceWinner, this);
+            //player.kill();
         }
       }, this);
 
@@ -332,17 +361,45 @@ var gameState = {
     },
 
     playerCollision: function(){
+        
+        var aHit = false;
+        var bHit = false;
       if ((this.playerA.state === this.STATE_SEI || this.playerA.state === this.STATE_HOI) && this.playerA.hitTime === 0) {
         this.playerA.hitTime = this.HIT_TIME;
         this.takeDamage(false);
-        this.playerA.velocity.x = -this.playerA.velocity.x;
+        this.playerA.velocity.x = this.playerA.velocity.x / 2;
+        this.playerB.velocity.y = -300;
+        this.playerB.velocity.x = this.playerA.direction * 300;
+          bHit =true;
 
       }
 
       if ((this.playerB.state === this.STATE_SEI || this.playerB.state === this.STATE_HOI) && this.playerB.hitTime === 0) {
         this.playerB.hitTime = this.HIT_TIME;
         this.takeDamage(true);
-        this.playerB.velocity.x = -this.playerB.velocity.x;
+        this.playerB.velocity.x = this.playerB.velocity.x / 2;
+        this.playerA.velocity.y = -300;
+        this.playerA.velocity.x = this.playerB.direction * 300;
+          aHit = true;
       }
+        if(aHit){
+            this.playerA.state = this.STATE_AIR;   
+        }
+        if(bHit){
+            this.playerB.state = this.STATE_AIR;   
+        }
+    },
+    
+    annouceWinner : function(){
+        if(this.playerA.state === this.STATE_DEAD && this.playerB.state === this.STATE_DEAD){
+            this.gameSounds.double_ko.play();
+        }else if(this.playerB.state === this.STATE_DEAD){
+            this.gameSounds.green_wins.play();
+        }else if(this.playerA.state === this.STATE_DEAD){
+            this.gameSounds.blue_wins.play();
+        }
+        
+        game.time.events.add(1500, this.initRound, this);
+        
     }
 };
